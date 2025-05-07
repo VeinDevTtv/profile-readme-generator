@@ -1,4 +1,4 @@
-import { MouseEvent, useMemo, useState } from 'react';
+import { MouseEvent, useMemo, useState, ComponentType } from 'react';
 import { Reorder } from 'framer-motion';
 
 import {
@@ -23,6 +23,11 @@ import { ContextMenus, PanelsEnum } from 'types';
 import * as S from './styles';
 import { CanvasErrorFallback } from './error';
 
+type SectionExtension = {
+  component: ComponentType<any>; // Define the expected shape of a section extension
+  // Potentially other properties if needed based on extension structure
+};
+
 const Canvas = () => {
   const { extensions } = useExtensions();
   const { sections, currentSection, previewMode } = useCanvas();
@@ -31,7 +36,10 @@ const Canvas = () => {
   const sectionIds = sections.map(section => section.id);
   const hasSection = !!sections.length;
 
-  const sectionsData = useMemo(() => extensions.sections ?? {}, [extensions]);
+  const sectionsData = useMemo(
+    () => (extensions.sections ?? {}) as Record<string, SectionExtension>, // Assert the type of the whole sections data object
+    [extensions]
+  );
 
   const handleOpenContextMenu = (e: MouseEvent) => {
     !previewMode && events.contextmenu.open(ContextMenus.SECTION, e);
@@ -108,7 +116,7 @@ const Canvas = () => {
               onReorder={events.canvas.reorder}
             >
               {sections.map(({ type, id, props }) => {
-                const section = sectionsData[type] as any;
+                const section = sectionsData[type]; // No need for 'as any' here anymore
 
                 if (!section) return null;
 
